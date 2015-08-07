@@ -31,7 +31,7 @@ class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
 
   public
   def encode(event)
-    data = event.to_hash.clone # Do not mutate the event
+    data = event.clone.to_hash # Do not mutate the event, also hashes do not clone cleanly.
 
     data["@timestamp_f"] = data["@timestamp"].to_f
     data.delete("@timestamp")
