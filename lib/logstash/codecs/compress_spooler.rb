@@ -31,18 +31,18 @@ class LogStash::Codecs::CompressSpooler < LogStash::Codecs::Base
 
   public
   def encode(event)
+    data = event.to_hash.clone # Do not mutate the event
+
+    data["@timestamp_f"] = data["@timestamp"].to_f
+    data.delete("@timestamp")
+
+    @buffer << data.to_hash
+
     if @buffer.length >= @spool_size
       z = Zlib::Deflate.new(@compress_level)
       @on_event.call event, z.deflate(MessagePack.pack(@buffer), Zlib::FINISH)
       z.close
       @buffer.clear
-    else
-      data = event.to_hash.clone # Do not mutate the event
-
-      data["@timestamp_f"] = data["@timestamp"].to_f
-      data.delete("@timestamp")
-
-      @buffer << data.to_hash
     end
   end # def encode
 
